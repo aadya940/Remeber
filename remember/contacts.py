@@ -52,24 +52,26 @@ class ContactsScreen(MDScreen):
             # Connect to the database and fetch contacts
             self.db = sqlite3.connect(self.db_path)
             self.cursor = self.db.cursor()
-            self.cursor.execute("SELECT title FROM notes")
+            self.cursor.execute("SELECT title, label FROM notes")
             contacts = self.cursor.fetchall()  # Returns a list of tuples
-            contacts = {
+            ourContacts = {
                 contact[0] for contact in contacts
             }  # Extract the first element (contact title) from tuples
+            ourLabels = {contact[1] for contact in contacts}
             self.db.commit()
 
             # Add contacts to the layout
-            if contacts:
-                for contact in contacts:
+            if ourContacts:
+                for contact, label in zip(ourContacts, ourLabels):
                     card = MDCard(
                         orientation="horizontal",
                         padding=20,
+                        md_bg_color=(0.9, 0.9, 0.9, 1),
                         size_hint=(None, None),
                         size=(400, 150),
-                        md_bg_color=self.theme_cls.primary_color,
                         pos_hint={"center_x": 0.5},
                     )
+
                     card_layout = BoxLayout(orientation="horizontal", spacing=10)
 
                     # Create and add the contact label
@@ -79,19 +81,43 @@ class ContactsScreen(MDScreen):
                         halign="center",
                         font_style="H4",
                     )
+
                     card_layout.add_widget(contact_label)
+
+                    # Create a vertical layout for the label and delete button
+                    cardSmall = BoxLayout(
+                        orientation="vertical",
+                        size_hint=(None, None),
+                        size=(150, 100),
+                        spacing=10,  # Add spacing between the label and delete button
+                    )
+
+                    # Create and add the small label
+                    label_small = MDLabel(
+                        text=f"{label}",
+                        markup=False,
+                        halign="center",
+                        font_style="H5",  # You can adjust the font style if needed
+                    )
 
                     delete_button = MDIconButton(
                         icon="trash-can",
                         icon_size="30sp",
+                        pos_hint={"center_x": 0.5},
                         on_release=lambda btn, c=contact: self.delete_contact(c),
                     )
 
-                    card_layout.add_widget(delete_button)
+                    # Add the label and delete button to the vertical layout
+                    cardSmall.add_widget(label_small)
+                    cardSmall.add_widget(delete_button)
 
-                    card.add_widget(card_layout)
+                    # Add everything to the main card layout
+                    card.add_widget(card_layout)  # Add the contact name
+                    card.add_widget(cardSmall)  # Add the label and delete button
 
+                    # Add the card to the main layout
                     self.layout.add_widget(card)
+
             else:
                 self.layout.add_widget(
                     MDLabel(
@@ -104,6 +130,7 @@ class ContactsScreen(MDScreen):
 
         except sqlite3.Error as e:
             print(f"Database error: {e}")
+
         finally:
             if self.db:
                 self.db.close()
@@ -129,9 +156,9 @@ class ContactsScreen(MDScreen):
 
     def on_key_pressed(self, window, key, scancode, codepoint, modifiers):
         """Handle back key (Android) or Esc key (Laptop) press."""
-        if key == 27:             # Back key on Android or Esc key on Laptop
+        if key == 27:  # Back key on Android or Esc key on Laptop
             self.load_contacts()  # Reload contacts
-            return True           # Prevent default behavior (going back)
+            return True  # Prevent default behavior (going back)
         return False
 
     def on_leave(self):

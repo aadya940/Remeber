@@ -12,6 +12,7 @@ from kivy.core.window import Window
 from .write_notes import WriteNotesScreen
 from .contacts import ContactsScreen
 
+
 class RememberApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Light"
@@ -20,7 +21,7 @@ class RememberApp(MDApp):
         self.screen_manager = MDScreenManager()
 
         home_screen = MDScreen(name="home")
-        
+
         self.screen_manager.add_widget(home_screen)
 
         notes_screen = WriteNotesScreen(name="notes")
@@ -34,7 +35,7 @@ class RememberApp(MDApp):
             markup=True,
             font_style="H4",
             pos_hint={"center_x": 0.65, "top": 1.3},
-            halign="left"
+            halign="left",
         )
 
         add_human_btn = MDIconButton(
@@ -61,7 +62,7 @@ class RememberApp(MDApp):
             text_color=self.theme_cls.primary_color,
             pos_hint={"center_x": 0.6, "center_y": 0.1},
             icon_size=80,
-            on_press = lambda x: self.switch_to_contacts(),
+            on_press=lambda x: self.switch_to_contacts(),
         )
 
         home_screen.add_widget(title_label)
@@ -75,15 +76,15 @@ class RememberApp(MDApp):
 
     def switch_to_notes(self):
         self.screen_manager.current = "notes"
-    
+
     def switch_to_contacts(self):
         self.screen_manager.current = "contacts"
 
     def on_back_button(self, window, key, *args):
-        if key == 27:  
-            if self.screen_manager.current != "home":  
-                self.screen_manager.current = "home"  
-                return True 
+        if key == 27:
+            if self.screen_manager.current != "home":
+                self.screen_manager.current = "home"
+                return True
         return False
 
 

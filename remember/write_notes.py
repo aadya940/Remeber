@@ -25,10 +25,11 @@ class WriteNotesScreen(MDScreen):
 
         if platform == "android":
             from android.storage import app_storage_path
+
             self.db_path = os.path.join(app_storage_path(), "notes.db")
         else:
             self.db_path = "./notes.db"
-        
+
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
         self.cursor.execute(
@@ -132,29 +133,24 @@ class WriteNotesScreen(MDScreen):
     def get_predefined_labels(self):
         try:
             if (self.db is not None) and (self.cursor is not None):
-                result = self.cursor.execute(
-                    """SELECT label FROM labels"""
-                )
+                result = self.cursor.execute("""SELECT label FROM labels""")
                 labels = [element[0] for element in result]
                 labels.extend(["Work", "Personal", "Friend", "Other", "Add New Label"])
-                labels = list(set(labels))  
+                labels = list(set(labels))
             else:
                 self.db = sqlite3.connect(self.db_path)
                 self.cursor = self.db.cursor()
-                result = self.cursor.execute(
-                    """SELECT label FROM labels"""
-                )
+                result = self.cursor.execute("""SELECT label FROM labels""")
                 labels = [element[0] for element in result]
                 labels.extend(["Work", "Personal", "Friend", "Other", "Add New Label"])
-                labels = list(set(labels))  
+                labels = list(set(labels))
             return labels
         except sqlite3.Error as E:
             pass
-        
 
     def select_label(self, label):
         self.selected_label = label
-        
+
         if str(self.selected_label) == "Add New Label":
             self.new_label_added = MDTextField(
                 hint_text="Your New Label ...",
@@ -168,7 +164,9 @@ class WriteNotesScreen(MDScreen):
                 font_size="18sp",
                 required=True,
             )
-            save_label_button = MDRaisedButton(text="Save", on_release=self.save_new_label)
+            save_label_button = MDRaisedButton(
+                text="Save", on_release=self.save_new_label
+            )
 
             layout = BoxLayout(orientation="vertical", padding=10)
             layout.add_widget(self.new_label_added)
@@ -178,14 +176,16 @@ class WriteNotesScreen(MDScreen):
                 title="Add New Label",
                 content=layout,
                 size_hint=(None, None),
-                size=(400, 300)
+                size=(400, 300),
             )
             self.popup.open()
 
         if not (self.selected_label == "Add New Label"):
-            self.label_button.text = f"[i]{label}[/i]"  # Update button text to show the selected label
-        
-        self.label_button.md_bg_color=(204/255, 119/255, 34/255, 1)
+            self.label_button.text = (
+                f"[i]{label}[/i]"  # Update button text to show the selected label
+            )
+
+        self.label_button.md_bg_color = (204 / 255, 119 / 255, 34 / 255, 1)
         self.menu.dismiss()
 
     def save_new_label(self, instance):
@@ -196,20 +196,21 @@ class WriteNotesScreen(MDScreen):
             {
                 "viewclass": "OneLineListItem",
                 "text": self.selected_label,
-                "on_release": lambda x= self.selected_label: self.select_label(x),
+                "on_release": lambda x=self.selected_label: self.select_label(x),
             }
         )
 
         new_label = self.new_label_added.text
         if new_label:
             try:
-                self.cursor.execute("INSERT INTO labels (label) VALUES (?)", (new_label,))
+                self.cursor.execute(
+                    "INSERT INTO labels (label) VALUES (?)", (new_label,)
+                )
                 self.db.commit()
                 self.popup.dismiss()
                 self.show_popup(f"New label '{new_label}' added successfully!")
             except sqlite3.Error as e:
                 self.show_popup(f"Database error: {e}")
-
 
     def open_menu(self, button):
         """Open the dropdown menu when the button is clicked."""
