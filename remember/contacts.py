@@ -81,18 +81,16 @@ class ContactsScreen(MDScreen):
                     )
                     card_layout.add_widget(contact_label)
 
-                    # Create and add the delete icon
                     delete_button = MDIconButton(
                         icon="trash-can",
                         icon_size="30sp",
                         on_release=lambda btn, c=contact: self.delete_contact(c),
                     )
+
                     card_layout.add_widget(delete_button)
 
-                    # Add card layout to the card
                     card.add_widget(card_layout)
 
-                    # Add the card to the layout
                     self.layout.add_widget(card)
             else:
                 self.layout.add_widget(

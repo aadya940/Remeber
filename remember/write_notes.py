@@ -160,7 +160,7 @@ class WriteNotesScreen(MDScreen):
                 hint_text="Your New Label ...",
                 multiline=False,
                 size_hint_y=None,
-                height=100,
+                height=200,
                 mode="rectangle",
                 radius=[10, 10, 10, 10],
                 line_color_normal=self.theme_cls.primary_color,
