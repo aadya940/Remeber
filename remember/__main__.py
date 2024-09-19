@@ -9,8 +9,8 @@ from kivymd.uix.dialog import MDDialog
 
 from kivy.core.window import Window
 
-from write_notes import WriteNotesScreen
-from contacts import ContactsScreen
+from .write_notes import WriteNotesScreen
+from .contacts import ContactsScreen
 
 class RememberApp(MDApp):
     def build(self):
