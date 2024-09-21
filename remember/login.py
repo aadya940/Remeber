@@ -108,7 +108,7 @@ class LoginScreen(Screen):
 
         if self.validate(api_key, name):
             self.store_info(api_key, name)
-            self.manager.current = "main_screen"  # Navigate back to the main screen
+            self.manager.current = "home"  # Navigate back to the main screen
         else:
             self.api_input.text = ""
             self.name_input.text = ""
