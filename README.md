@@ -1,4 +1,4 @@
-### Remember Your People: Never Forget a Conversation Again!
+### Remember: Never Forget a Conversation Again!
 
 ### Overview:
 
