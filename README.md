@@ -2,9 +2,9 @@
 
 ### Overview
 
-Have you ever met someone at an event or work function, only to forget the details of your conversation the next time you see them? You’re not alone. With Remember Your People, you’ll never have to worry about those awkward moments again! This AI-powered app helps you remember key details about your interactions and gives you personalized conversation suggestions for your next meeting.
+Have you ever met someone at an event or work function, only to forget the details of your conversation the next time you see them? You’re not alone. With **Remember**, you’ll never have to worry about those awkward moments again! This AI-powered app helps you remember key details about your interactions and gives you personalized conversation suggestions for your next meeting.
 
-Whether you’re networking, maintaining professional relationships, or just want to be more thoughtful with friends and family, Remember Your People makes sure you’re always prepared.
+Whether you’re networking, maintaining professional relationships, or just want to be more thoughtful with friends and family, **Remember** makes sure you’re always prepared.
 
 ### Features
 - Easy Note-Taking: Quickly jot down bullet points about conversations with people you meet.
@@ -22,4 +22,4 @@ Whether you’re networking, maintaining professional relationships, or just wan
 ### Ideal For
 - Professionals: Perfect for those in sales, networking, or business development who need to remember key details about clients and contacts.
 - Social Butterflies: Stay connected with a large social circle by keeping track of your conversations.
-- Anyone Who Cares About Building Strong Relationships: Whether it’s with colleagues, friends, or family, Remember Your People helps you be more thoughtful in your interactions.
+- Anyone Who Cares About Building Strong Relationships: Whether it’s with colleagues, friends, or family, **Remember** helps you be more thoughtful in your interactions.
