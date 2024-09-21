@@ -6,6 +6,7 @@ from kivymd.uix.textfield import MDTextField
 from kivymd.uix.menu import MDDropdownMenu
 
 from kivy.uix.scrollview import ScrollView
+from kivy.uix.widget import Widget
 from kivy.uix.boxlayout import BoxLayout
 from kivy.utils import platform
 from kivy.uix.popup import Popup
@@ -157,6 +158,7 @@ class WriteNotesScreen(MDScreen):
                 multiline=False,
                 size_hint_y=None,
                 height=200,
+                padding=50,
                 mode="rectangle",
                 radius=[10, 10, 10, 10],
                 line_color_normal=self.theme_cls.primary_color,
@@ -168,8 +170,14 @@ class WriteNotesScreen(MDScreen):
                 text="Save", on_release=self.save_new_label
             )
 
+            # Add a widget to create space between the text field and button
+            spacing_widget = Widget(
+                size_hint_y=None, height=20
+            )  # Adjust the height as needed
+
             layout = BoxLayout(orientation="vertical", padding=10)
             layout.add_widget(self.new_label_added)
+            layout.add_widget(spacing_widget)  # Add the spacing widget here
             layout.add_widget(save_label_button)
 
             self.popup = Popup(
@@ -180,13 +188,13 @@ class WriteNotesScreen(MDScreen):
             )
             self.popup.open()
 
-        if not (self.selected_label == "Add New Label"):
-            self.label_button.text = (
-                f"[i]{label}[/i]"  # Update button text to show the selected label
-            )
+            if not (self.selected_label == "Add New Label"):
+                self.label_button.text = (
+                    f"[i]{label}[/i]"  # Update button text to show the selected label
+                )
 
-        self.label_button.md_bg_color = (204 / 255, 119 / 255, 34 / 255, 1)
-        self.menu.dismiss()
+            self.label_button.md_bg_color = (204 / 255, 119 / 255, 34 / 255, 1)
+            self.menu.dismiss()
 
     def save_new_label(self, instance):
         self.selected_label = self.new_label_added.text
@@ -221,6 +229,11 @@ class WriteNotesScreen(MDScreen):
         title = self.title_input.text
         content = self.content_input.text
 
+        # Check if a label is selected
+        if not self.selected_label or self.selected_label == "Add New Label":
+            self.show_popup("Please select a label before saving.")
+            return
+
         if title and content:
             try:
                 self.cursor.execute(
@@ -228,13 +241,40 @@ class WriteNotesScreen(MDScreen):
                     (title, content, self.selected_label),
                 )
                 self.db.commit()
-                self.title_input.text = ""
-                self.content_input.text = ""
+
+                # Call the refresh function after saving the note
+                self.refresh_ui()
+
                 self.show_popup("Note saved successfully!")
             except sqlite3.Error as e:
                 self.show_popup(f"Database error: {e}")
         else:
             self.show_popup("Please fill in Title & Conversations.")
+
+    def refresh_ui(self):
+        self.title_input.text = ""
+        self.content_input.text = ""
+
+        self.selected_label = None
+        self.label_button.text = "[i]Label[/i]"
+        self.label_button.md_bg_color = self.theme_cls.primary_color
+
+        existing_labels = self.get_predefined_labels()
+
+        dropdown_menu = [
+            {
+                "viewclass": "OneLineListItem",
+                "text": label,
+                "on_release": lambda x=label: self.select_label(x),
+            }
+            for label in existing_labels
+        ]
+
+        self.menu.items = dropdown_menu
+
+        # # 4. (Optional) Refresh other UI elements, like a notes display area, if you have one
+        # self.content_display.clear_widgets()  # If you display notes in a widget, clear it
+        # self.load_notes()  # Load the notes again (implement this method if needed)
 
     def show_popup(self, message):
         dialog = MDDialog(

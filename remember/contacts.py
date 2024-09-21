@@ -31,9 +31,7 @@ class ContactsScreen(MDScreen):
         self.layout = BoxLayout(
             orientation="vertical", padding=20, spacing=20, size_hint_y=None
         )
-        self.layout.bind(
-            minimum_height=self.layout.setter("height")
-        )  # Adjust layout height dynamically
+        self.layout.bind(minimum_height=self.layout.setter("height"))
         self.scroll_view.add_widget(self.layout)
         self.add_widget(self.scroll_view)
 
@@ -54,21 +52,24 @@ class ContactsScreen(MDScreen):
             self.cursor = self.db.cursor()
             self.cursor.execute("SELECT title, label FROM notes")
             contacts = self.cursor.fetchall()  # Returns a list of tuples
-            ourContacts = {
-                contact[0] for contact in contacts
-            }  # Extract the first element (contact title) from tuples
-            ourLabels = {contact[1] for contact in contacts}
+            # ourContacts = {
+            #     contact[0] for contact in contacts
+            # }  # Extract the first element (contact title) from tuples
+            # ourLabels = {contact[1] for contact in contacts}
             self.db.commit()
 
             # Add contacts to the layout
-            if ourContacts:
-                for contact, label in zip(ourContacts, ourLabels):
+            if contacts:
+                for contact, label in contacts:
                     card = MDCard(
                         orientation="horizontal",
                         padding=20,
                         md_bg_color=(0.9, 0.9, 0.9, 1),
-                        size_hint=(None, None),
-                        size=(400, 150),
+                        size_hint=(
+                            1,
+                            None,
+                        ),  # Dynamically stretch the card horizontally
+                        height=150,  # Fixed height of the card
                         pos_hint={"center_x": 0.5},
                     )
 
@@ -97,7 +98,7 @@ class ContactsScreen(MDScreen):
                         text=f"{label}",
                         markup=False,
                         halign="center",
-                        font_style="H5",  # You can adjust the font style if needed
+                        font_style="H5",
                     )
 
                     delete_button = MDIconButton(
