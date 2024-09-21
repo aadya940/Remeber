@@ -5,6 +5,7 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.textfield import MDTextField
 
+
 from kivy.uix.scrollview import ScrollView
 from kivy.utils import platform
 from kivy.core.window import Window
@@ -47,18 +48,12 @@ class ContactsScreen(MDScreen):
         self.layout.clear_widgets()  # Clear existing contacts
 
         try:
-            # Connect to the database and fetch contacts
             self.db = sqlite3.connect(self.db_path)
             self.cursor = self.db.cursor()
             self.cursor.execute("SELECT title, label FROM notes")
             contacts = self.cursor.fetchall()  # Returns a list of tuples
-            # ourContacts = {
-            #     contact[0] for contact in contacts
-            # }  # Extract the first element (contact title) from tuples
-            # ourLabels = {contact[1] for contact in contacts}
             self.db.commit()
 
-            # Add contacts to the layout
             if contacts:
                 for contact, label in contacts:
                     card = MDCard(
@@ -69,7 +64,7 @@ class ContactsScreen(MDScreen):
                             1,
                             None,
                         ),  # Dynamically stretch the card horizontally
-                        height=150,  # Fixed height of the card
+                        height=200,  # Fixed height of the card
                         pos_hint={"center_x": 0.5},
                     )
 
@@ -89,7 +84,7 @@ class ContactsScreen(MDScreen):
                     cardSmall = BoxLayout(
                         orientation="vertical",
                         size_hint=(None, None),
-                        size=(150, 100),
+                        size=(200, 150),
                         spacing=10,  # Add spacing between the label and delete button
                     )
 
@@ -108,9 +103,17 @@ class ContactsScreen(MDScreen):
                         on_release=lambda btn, c=contact: self.delete_contact(c),
                     )
 
+                    edit_button = MDIconButton(
+                        icon="pencil",
+                        icon_size="30sp",
+                        pos_hint={"center_x": 0.5},
+                        on_release=lambda btn, c=contact: self.edit_contact(c),
+                    )
+
                     # Add the label and delete button to the vertical layout
                     cardSmall.add_widget(label_small)
                     cardSmall.add_widget(delete_button)
+                    cardSmall.add_widget(edit_button)
 
                     # Add everything to the main card layout
                     card.add_widget(card_layout)  # Add the contact name
@@ -135,6 +138,9 @@ class ContactsScreen(MDScreen):
         finally:
             if self.db:
                 self.db.close()
+
+    def edit_contact(self, contact_title):
+        pass
 
     def delete_contact(self, contact_title):
         """Delete a contact from the database and refresh the contact list."""
