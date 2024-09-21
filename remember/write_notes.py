@@ -188,13 +188,13 @@ class WriteNotesScreen(MDScreen):
             )
             self.popup.open()
 
-            if not (self.selected_label == "Add New Label"):
-                self.label_button.text = (
-                    f"[i]{label}[/i]"  # Update button text to show the selected label
-                )
+        if not (self.selected_label == "Add New Label"):
+            self.label_button.text = (
+                f"[i]{label}[/i]"  # Update button text to show the selected label
+            )
 
-            self.label_button.md_bg_color = (204 / 255, 119 / 255, 34 / 255, 1)
-            self.menu.dismiss()
+        self.label_button.md_bg_color = (204 / 255, 119 / 255, 34 / 255, 1)
+        self.menu.dismiss()
 
     def save_new_label(self, instance):
         self.selected_label = self.new_label_added.text
