@@ -27,7 +27,7 @@ class WriteNotesScreen(MDScreen):
         if platform == "android":
             from android.storage import app_storage_path
 
-            self.db_path = os.path.join(app_storage_path(), "notes.db")
+            self.db_path = os.path.join(app_storage_path(), "./notes.db")
         else:
             self.db_path = "./notes.db"
 

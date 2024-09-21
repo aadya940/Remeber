@@ -11,6 +11,9 @@ from kivy.core.window import Window
 
 from .write_notes import WriteNotesScreen
 from .contacts import ContactsScreen
+from .login import LoginScreen
+
+import os
 
 
 class RememberApp(MDApp):
@@ -21,6 +24,19 @@ class RememberApp(MDApp):
         self.screen_manager = MDScreenManager()
 
         home_screen = MDScreen(name="home")
+
+        login_screen = LoginScreen(name="login")
+        self.screen_manager.add_widget(login_screen)
+
+        _login = self.screen_manager.get_screen("login")
+
+        if _login.check_existing_info():
+            self.screen_manager.current = (
+                "main_screen"  # Go to the main screen if info exists
+            )
+            os.environ["GEMINI_API_KEY"] = _loginc.check_existing_info()[0]
+        else:
+            self.screen_manager.current = "login"  # Go to the login screen
 
         self.screen_manager.add_widget(home_screen)
 
