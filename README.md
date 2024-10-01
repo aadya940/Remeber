@@ -7,6 +7,7 @@ Have you ever met someone at an event or work function, only to forget the detai
 Whether you’re networking, maintaining professional relationships, or just want to be more thoughtful with friends and family, **Remember** makes sure you’re always prepared.
 
 ### Features
+- Minimalist: Only do what actually matters.
 - Easy Note-Taking: Quickly jot down bullet points about conversations with people you meet.
 - AI-Powered Conversation Suggestions: Before your next meeting, simply ask the AI, “What can I talk about with [Name]?” and get personalized conversation starters based on your past interactions.
 - Stay Organized: Track all your conversations and key details about each person in one place.
