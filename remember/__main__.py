@@ -12,6 +12,7 @@ from kivy.core.window import Window
 from .write_notes import WriteNotesScreen
 from .contacts import ContactsScreen
 from .login import LoginScreen
+from .ask_ai import ChatScreen
 
 import os
 
@@ -26,8 +27,10 @@ class RememberApp(MDApp):
         home_screen = MDScreen(name="home")
 
         login_screen = LoginScreen(name="login")
+        chat_screen = ChatScreen(name="chat")
         self.screen_manager.add_widget(login_screen)
         self.screen_manager.add_widget(home_screen)
+        self.screen_manager.add_widget(chat_screen)
 
         _login = self.screen_manager.get_screen("login")
 
@@ -67,6 +70,7 @@ class RememberApp(MDApp):
             md_bg_color=self.theme_cls.primary_color,  # Filled background color
             pos_hint={"center_x": 0.5, "center_y": 0.4},
             size_hint=(0.6, 0.1),
+            on_release=lambda x: self.switch_to_chat(),
         )
 
         contact_list_btn = MDIconButton(
@@ -75,7 +79,7 @@ class RememberApp(MDApp):
             text_color=self.theme_cls.primary_color,
             pos_hint={"center_x": 0.6, "center_y": 0.1},
             icon_size=80,
-            on_press=lambda x: self.switch_to_contacts(),
+            on_release=lambda x: self.switch_to_contacts(),
         )
 
         home_screen.add_widget(title_label)
@@ -89,6 +93,9 @@ class RememberApp(MDApp):
 
     def switch_to_notes(self):
         self.screen_manager.current = "notes"
+
+    def switch_to_chat(self):
+        self.screen_manager.current = "chat"
 
     def switch_to_contacts(self):
         self.screen_manager.current = "contacts"
