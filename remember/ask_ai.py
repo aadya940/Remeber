@@ -54,6 +54,7 @@ class ChatScreen(Screen):
             if result:
                 self._name = result[0]  # Assign the fetched name
             self.db.close()
+
         except Exception as e:
             print(f"Database error: {e}")
             # Database error fallback

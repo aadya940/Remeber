@@ -27,10 +27,8 @@ class RememberApp(MDApp):
         home_screen = MDScreen(name="home")
 
         login_screen = LoginScreen(name="login")
-        chat_screen = ChatScreen(name="chat")
         self.screen_manager.add_widget(login_screen)
         self.screen_manager.add_widget(home_screen)
-        self.screen_manager.add_widget(chat_screen)
 
         _login = self.screen_manager.get_screen("login")
 
@@ -39,6 +37,9 @@ class RememberApp(MDApp):
             os.environ["GEMINI_API_KEY"] = _login.check_existing_info()[0]
         else:
             self.screen_manager.current = "login"  # Go to the login screen
+
+        chat_screen = ChatScreen(name="chat")
+        self.screen_manager.add_widget(chat_screen)
 
         notes_screen = WriteNotesScreen(name="notes")
         self.screen_manager.add_widget(notes_screen)
