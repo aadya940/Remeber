@@ -12,6 +12,9 @@ from kivymd.uix.card import MDCard
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager
 
+from .api_calls import setup_gemini, get_ai_suggestions
+from .utils import convert_markdown_to_kivy_markup
+
 import sqlite3
 
 
@@ -20,22 +23,38 @@ class ChatBubble(MDCard):
         super().__init__(**kwargs)
 
         self.size_hint_y = None
-        self.height = dp(80)  # Increased height for zoom effect
-        self.padding = dp(15)  # Increased padding for larger text
-        self.radius = [20, 20, 20, 20]  # More rounded corners
+        self.padding = dp(15)  # Padding around the text
+        self.radius = [20, 20, 20, 20]  # Rounded corners
         self.md_bg_color = [0, 0.6, 1, 1] if sender != "AI" else [0.9, 0.9, 0.9, 1]
         self.pos_hint = {"right": 1} if sender != "AI" else {"left": 1}
 
-        # Add the label with larger text to the card
-        self.add_widget(
-            Label(
-                text=message,
-                color=(0, 0, 0, 1),
-                size_hint_y=None,
-                height=self.height,
-                font_size=dp(20),
-            )
+        # Create the label with the text
+        self.label = Label(
+            text=message,
+            color=(0, 0, 0, 1),
+            size_hint_y=None,
+            font_size=dp(20),
+            text_size=(
+                Window.width - dp(60),
+                None,
+            ),  # Ensure text wraps inside the card
+            halign="left",  # Align text to the left
+            valign="middle",  # Vertical alignment
+            markup=True,
         )
+        self.label.bind(
+            texture_size=self._update_height
+        )  # Bind to dynamically adjust height
+
+        # Add the label to the card
+        self.add_widget(self.label)
+
+    def _update_height(self, *args):
+        # Set the height of the card based on the label's content
+        self.height = self.label.texture_size[1] + dp(30)  # Add padding for the card
+        self.label.height = self.label.texture_size[
+            1
+        ]  # Adjust label height to fit text
 
 
 class ChatScreen(Screen):
@@ -118,7 +137,7 @@ class ChatScreen(Screen):
             self.add_chat_bubble(message, sender=f"{self._name}")
 
             # Step 1: Asking for the user's name
-            if list(self._prompt_args.keys()) == []:
+            if not self._prompt_args:
                 self._prompt_args["Name"] = message.lower()
 
                 # Simulate AI response
@@ -131,11 +150,11 @@ class ChatScreen(Screen):
                         "SELECT label FROM notes WHERE LOWER(title) = ?",
                         (self._prompt_args["Name"],),
                     )
-                    _label_items = self.notes_cursor.fetchall()
+                    self._label_items = self.notes_cursor.fetchall()
 
-                    if _label_items:  # If labels exist for the provided name
-                        i = 0
-                        self._label = _label_items[i][0]
+                    if self._label_items:  # If labels exist for the provided name
+                        self.i = 0
+                        self._label = self._label_items[self.i][0]
                         ai_message = f'Is it {message} related to you by "{self._label}" Contact?'
                         self.add_chat_bubble(ai_message, sender="AI")
                         self.user_input.hint_text = "Yes or No?"
@@ -171,16 +190,39 @@ class ChatScreen(Screen):
                     self.user_input.text = ""
                     ai_message = "Generating AI Recommendations ..."
                     self.add_chat_bubble(ai_message, sender="AI")
-                else:
-                    i += 1
-                    if i < len(_label_items):
-                        self._label = _label_items[i][0]
-                        self.user_input.hint_text = (
-                            f"Is it {message} from {self._label}?"
+                    # No need to commit for SELECT queries, so removed the commit
+                    self.notes_cursor.execute(
+                        """SELECT content FROM notes WHERE LOWER(title) = ? AND LOWER(label) = ?""",
+                        (
+                            self._prompt_args["Name"].lower(),
+                            self._prompt_args["Label"].lower(),
+                        ),
+                    )
+                    result = self.notes_cursor.fetchone()
+                    if result:
+                        self._prompt_args["Content"] = result[0]
+                        setup_gemini()
+                        _suggestions = get_ai_suggestions(
+                            self._prompt_args["Name"],
+                            self._prompt_args["Label"],
+                            self._prompt_args["Content"],
+                        )
+                        _suggestions = convert_markdown_to_kivy_markup(_suggestions)
+                        self.add_chat_bubble(_suggestions, sender="AI")
+                    else:
+                        self.add_chat_bubble(
+                            "No content found for the selected label.", sender="AI"
                         )
 
+                else:
+                    self.i += 1
+                    if self.i < len(self._label_items):
+                        self._label = self._label_items[self.i][0]
+                        ai_message = f"Is it {message} from {self._label}?"
+                        self.add_chat_bubble(ai_message, sender="AI")
+                        self.user_input.hint_text = "Yes or No?"
                     else:
-                        ai_message = f"{self._name}, That's all for the name {self._prompt_args['Name']}."
+                        ai_message = f"{self._name}, that's all for the name {self._prompt_args['Name']}."
                         self.add_chat_bubble(ai_message, sender="AI")
                         del self._prompt_args["Name"]  # Reset to ask for the name again
                         self.user_input.hint_text = (
