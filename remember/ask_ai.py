@@ -16,15 +16,15 @@ import sqlite3
 
 
 class ChatBubble(MDCard):
-    def __init__(self, message, sender="user", **kwargs):
+    def __init__(self, message, sender, **kwargs):
         super().__init__(**kwargs)
 
         self.size_hint_y = None
         self.height = dp(80)  # Increased height for zoom effect
         self.padding = dp(15)  # Increased padding for larger text
         self.radius = [20, 20, 20, 20]  # More rounded corners
-        self.md_bg_color = [0, 0.6, 1, 1] if sender == "user" else [0.9, 0.9, 0.9, 1]
-        self.pos_hint = {"right": 1} if sender == "user" else {"left": 1}
+        self.md_bg_color = [0, 0.6, 1, 1] if sender != "AI" else [0.9, 0.9, 0.9, 1]
+        self.pos_hint = {"right": 1} if sender != "AI" else {"left": 1}
 
         # Add the label with larger text to the card
         self.add_widget(
@@ -43,17 +43,27 @@ class ChatScreen(Screen):
         super().__init__(**kwargs)
 
         self._name = "Human"  # Default name in case the DB query fails
+        self._prompt_args = {}
+        self._label_items = []
+        self.i = 0  # Index for label items
+
+        try:
+            self.notes_db = sqlite3.connect("notes.db")
+            self.notes_cursor = self.notes_db.cursor()
+
+        except Exception as e:
+            print(f"Database error: {e}")
+            # Database error fallback
 
         # Try connecting to the database and fetching the user's name
         try:
-            self.db = sqlite3.connect("login_info.db")
+            self.db = sqlite3.connect("./login_info.db")
             self.cursor = self.db.cursor()
 
             self.cursor.execute("SELECT name FROM login_info LIMIT 1")
             result = self.cursor.fetchone()
             if result:
                 self._name = result[0]  # Assign the fetched name
-            self.db.close()
 
         except Exception as e:
             print(f"Database error: {e}")
@@ -105,14 +115,94 @@ class ChatScreen(Screen):
 
         if message:
             # Add user message to chat layout
-            self.add_chat_bubble(message, sender="user")
+            self.add_chat_bubble(message, sender=f"{self._name}")
 
-            # Simulate AI response
-            ai_message = f"AI response to: {message}"
-            self.add_chat_bubble(ai_message, sender="ai")
+            # Step 1: Asking for the user's name
+            if list(self._prompt_args.keys()) == []:
+                self._prompt_args["Name"] = message.lower()
+
+                # Simulate AI response
+                ai_message = f"Name received: {message}"
+                self.add_chat_bubble(ai_message, sender="AI")
+
+                # Check if the notes table exists and query labels
+                try:
+                    self.notes_cursor.execute(
+                        "SELECT label FROM notes WHERE LOWER(title) = ?",
+                        (self._prompt_args["Name"],),
+                    )
+                    _label_items = self.notes_cursor.fetchall()
+
+                    if _label_items:  # If labels exist for the provided name
+                        i = 0
+                        self._label = _label_items[i][0]
+                        ai_message = f'Is it {message} related to you by "{self._label}" Contact?'
+                        self.add_chat_bubble(ai_message, sender="AI")
+                        self.user_input.hint_text = "Yes or No?"
+                    else:
+                        # If no labels are found for the given name
+                        ai_message = f"No labels found for the name {self._prompt_args['Name']}. Please enter a valid label."
+                        self.add_chat_bubble(ai_message, sender="AI")
+                        del self._prompt_args["Name"]  # Reset to ask for the name again
+                        self.user_input.hint_text = (
+                            f"Who are you going to talk to, {self._name}?"
+                        )
+
+                except sqlite3.OperationalError:
+                    # This exception indicates that the notes table doesn't exist
+                    ai_message = (
+                        f"Hey {self._name}, you haven't started writing any notes yet."
+                    )
+                    self.add_chat_bubble(ai_message, sender="AI")
+                    del self._prompt_args["Name"]  # Reset to ask for the name again
+                    self.user_input.hint_text = (
+                        f"Who are you going to talk to, {self._name}?"
+                    )
+
+                self.user_input.text = ""
+                return
+
+            # Step 2: Asking to confirm the label
+            elif "Name" in self._prompt_args and "Label" not in self._prompt_args:
+                if "yes" in message.lower():
+                    self._prompt_args["Label"] = self._label
+                    ai_message = f"Label confirmed: {self._label}"
+                    self.add_chat_bubble(ai_message, sender="AI")
+                    self.user_input.text = ""
+                    ai_message = "Generating AI Recommendations ..."
+                    self.add_chat_bubble(ai_message, sender="AI")
+                else:
+                    i += 1
+                    if i < len(_label_items):
+                        self._label = _label_items[i][0]
+                        self.user_input.hint_text = (
+                            f"Is it {message} from {self._label}?"
+                        )
+
+                    else:
+                        ai_message = f"{self._name}, That's all for the name {self._prompt_args['Name']}."
+                        self.add_chat_bubble(ai_message, sender="AI")
+                        del self._prompt_args["Name"]  # Reset to ask for the name again
+                        self.user_input.hint_text = (
+                            f"Who are you going to talk to, {self._name}?"
+                        )
+                return
 
         # Clear input after sending
         self.user_input.text = ""
+
+    def query_labels(self, name):
+        """Query database for labels associated with the given name."""
+        try:
+            self.notes_db = sqlite3.connect("notes.db")
+            self.notes_cursor = self.notes_db.cursor()
+            self.notes_cursor.execute(
+                "SELECT label FROM notes WHERE LOWER(title) = ?", (name,)
+            )
+            self._label_items = [item[0] for item in self.notes_cursor.fetchall()]
+
+        except Exception as e:
+            print(f"Database error: {e}")
 
     def add_chat_bubble(self, message, sender="user"):
         bubble = ChatBubble(message=message, sender=sender)
