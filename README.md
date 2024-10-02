@@ -1,18 +1,18 @@
 ### Remember: Never Forget a Conversation Again!
 
-- Home Page
+#### Home Page
   
 ![image](https://github.com/user-attachments/assets/25628775-51d5-444e-9a37-d63f8ddebd81)
 
-- Save Notes
+#### Save Notes
   
 ![image](https://github.com/user-attachments/assets/fd95ce56-1c48-4dbb-a732-f5cc896b19ae)
 
-- Contacts Page
+#### Contacts Page
   
 ![image](https://github.com/user-attachments/assets/1d8ccb71-35f9-4d48-8258-049a8cb1bcb6)
 
-- Ask AI
+#### Ask AI
 
 ![image](https://github.com/user-attachments/assets/9fc420ce-9172-423e-a38a-aa3b2a1ff777)
 
