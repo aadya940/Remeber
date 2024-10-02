@@ -1,5 +1,13 @@
 ### Remember: Never Forget a Conversation Again!
 
+![image](https://github.com/user-attachments/assets/25628775-51d5-444e-9a37-d63f8ddebd81)
+
+![image](https://github.com/user-attachments/assets/fd95ce56-1c48-4dbb-a732-f5cc896b19ae)
+
+![image](https://github.com/user-attachments/assets/1d8ccb71-35f9-4d48-8258-049a8cb1bcb6)
+
+![image](https://github.com/user-attachments/assets/9fc420ce-9172-423e-a38a-aa3b2a1ff777)
+
 ### Overview
 
 Have you ever met someone at an event or work function, only to forget the details of your conversation the next time you see them? You’re not alone. With **Remember**, you’ll never have to worry about those awkward moments again! This AI-powered app helps you remember key details about your interactions and gives you personalized conversation suggestions for your next meeting.
