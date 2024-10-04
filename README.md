@@ -24,3 +24,10 @@ Whether you’re networking, maintaining professional relationships, or just wan
 - Professionals: Perfect for those in sales, networking, or business development who need to remember key details about clients and contacts.
 - Social Butterflies: Stay connected with a large social circle by keeping track of your conversations.
 - Anyone Who Cares About Building Strong Relationships: Whether it’s with colleagues, friends, or family, **Remember** helps you be more thoughtful in your interactions.
+
+
+#### Contributing Guidelines
+- It's better to communicate your changes through images.
+- Check if your APK compiles succesfully.
+- Write clean and concise code.
+- Use comments if needed.

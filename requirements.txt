@@ -1,3 +1,5 @@
 kivy
 kivymd
 google-generativeai
+sqlite3
+android
