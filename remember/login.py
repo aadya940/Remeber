@@ -1,9 +1,11 @@
 from kivymd.uix.label import MDLabel
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.button import MDFillRoundFlatButton
+from kivymd.uix.card import MDCard
 from kivy.uix.boxlayout import BoxLayout
 from kivy.utils import platform
 from kivy.uix.screenmanager import Screen
+from kivymd.app import MDApp
 
 import sqlite3
 import os
@@ -16,15 +18,32 @@ class LoginScreen(Screen):
         # Main layout for the screen
         self.layout = BoxLayout(orientation="vertical", padding=20, spacing=20)
 
-        # Gemini API Key Label
+        # MDCard layout for better design with dark mode style
+        self.card = MDCard(
+            orientation="vertical",
+            padding=25,
+            spacing=25,
+            size_hint=(None, None),
+            size=("400dp", "500dp"),
+            pos_hint={"center_x": 0.5, "center_y": 0.5},
+            radius=[15, 15, 15, 15],
+            elevation=10,
+            md_bg_color=(0.15, 0.15, 0.15, 1),  # Dark background for the card
+        )
+
+        # Gemini API Key Label with light text color for contrast
         self.api_label = MDLabel(
             text="[b]Google Gemini API Key[/b]",
             markup=True,
             halign="center",
             font_style="H5",
+            theme_text_color="Custom",  # Use custom color
+            text_color=(1, 1, 1, 1),  # White text for contrast
+            size_hint_y=None,
+            height="50dp",
         )
 
-        # Gemini API Key Input
+        # Gemini API Key Input with rounded corners
         self.api_input = MDTextField(
             hint_text="Enter Google Gemini API KEY",
             multiline=False,
@@ -36,15 +55,19 @@ class LoginScreen(Screen):
             required=True,
         )
 
-        # Name Label
+        # Name Label with light text color for contrast
         self.name_label = MDLabel(
             text="[b]What's your name?[/b]",
             markup=True,
             halign="center",
             font_style="H5",
+            theme_text_color="Custom",  # Use custom color
+            text_color=(1, 1, 1, 1),  # White text for contrast
+            size_hint_y=None,
+            height="50dp",
         )
 
-        # Name Input
+        # Name Input with rounded corners
         self.name_input = MDTextField(
             hint_text="Enter your name",
             multiline=False,
@@ -56,22 +79,27 @@ class LoginScreen(Screen):
             required=True,
         )
 
-        # Submit Button
+        # Submit Button with modern dark mode styling
         self.submit_button = MDFillRoundFlatButton(
             text="Save",
             size_hint=(None, None),
-            size=("200dp", "50dp"),
-            font_size="16sp",
+            size=("250dp", "50dp"),
+            font_size="18sp",
             on_press=self.on_submit,
             pos_hint={"center_x": 0.5},
+            md_bg_color=(0.15, 0.15, 0.15, 1),  # Dark background for the button
+            text_color=(1, 1, 1, 1),  # White text for the button
         )
 
-        # Add widgets to layout with padding and spacing
-        self.layout.add_widget(self.api_label)
-        self.layout.add_widget(self.api_input)
-        self.layout.add_widget(self.name_label)
-        self.layout.add_widget(self.name_input)
-        self.layout.add_widget(self.submit_button)
+        # Add widgets to card
+        self.card.add_widget(self.api_label)
+        self.card.add_widget(self.api_input)
+        self.card.add_widget(self.name_label)
+        self.card.add_widget(self.name_input)
+        self.card.add_widget(self.submit_button)
+
+        # Add card to layout
+        self.layout.add_widget(self.card)
 
         # Add layout to the screen
         self.add_widget(self.layout)

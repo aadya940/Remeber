@@ -17,36 +17,59 @@ import os
 
 class WriteNotesScreen(MDScreen):
     def __init__(self, **kwargs):
-        self.db = None
-        self.cursor = None
-
         super().__init__(**kwargs)
-
         self.theme_cls.theme_style = "Light"
+        self.selected_label = None
 
+        # Initialize the database
+        self.setup_database()
+
+        # Create the layout
+        layout = BoxLayout(orientation="vertical", padding=20, spacing=20)
+        self.create_ui_elements(layout)
+        self.add_widget(layout)
+
+        # Add scroll view for content display
+        self.content_display = BoxLayout(
+            orientation="vertical", padding=10, spacing=10, size_hint_y=None
+        )
+        self.scroll_view = ScrollView(size_hint=(1, None), size=(self.width, 300))
+        self.scroll_view.add_widget(self.content_display)
+        layout.add_widget(self.scroll_view)
+
+    def setup_database(self):
+        """Setup the SQLite database for storing notes and labels."""
         if platform == "android":
             from android.storage import app_storage_path
 
-            self.db_path = os.path.join(app_storage_path(), "./notes.db")
+            self.db_path = os.path.join(app_storage_path(), "notes.db")
         else:
-            self.db_path = "./notes.db"
+            self.db_path = "notes.db"
 
         self.db = sqlite3.connect(self.db_path)
         self.cursor = self.db.cursor()
+
         self.cursor.execute(
-            """CREATE TABLE IF NOT EXISTS labels
-                                (id INTEGER PRIMARY KEY, label TEXT)"""
+            """
+            CREATE TABLE IF NOT EXISTS labels (
+                id INTEGER PRIMARY KEY, 
+                label TEXT)
+        """
         )
         self.cursor.execute(
-            """CREATE TABLE IF NOT EXISTS notes
-                              (id INTEGER PRIMARY KEY, title TEXT, content TEXT, label TEXT REFERENCES labels(label))"""
+            """
+            CREATE TABLE IF NOT EXISTS notes (
+                id INTEGER PRIMARY KEY, 
+                title TEXT, 
+                content TEXT, 
+                label TEXT REFERENCES labels(label))
+        """
         )
         self.db.commit()
 
-        layout = BoxLayout(orientation="vertical", padding=20, spacing=20)
-
-        self.selected_label = None
-
+    def create_ui_elements(self, layout):
+        """Create the main UI elements for writing and saving notes."""
+        # Title Label
         self.writenotes_title_label = MDLabel(
             text="[b]How was your last Conversation?[/b] [i]Write Here ...[/i]",
             markup=True,
@@ -54,6 +77,7 @@ class WriteNotesScreen(MDScreen):
             halign="left",
         )
 
+        # Input Fields
         self.title_input = MDTextField(
             hint_text="Name",
             size_hint_y=None,
@@ -79,8 +103,8 @@ class WriteNotesScreen(MDScreen):
             required=True,
         )
 
+        # Dropdown for Labels
         existing_labels = self.get_predefined_labels()
-
         dropdown_menu = [
             {
                 "viewclass": "OneLineListItem",
@@ -89,125 +113,97 @@ class WriteNotesScreen(MDScreen):
             }
             for label in existing_labels
         ]
+        self.menu = MDDropdownMenu(items=dropdown_menu, width_mult=4)
 
-        self.menu = MDDropdownMenu(
-            items=dropdown_menu,
-            width_mult=4,
-        )
-
+        # Label Button
         self.label_button = MDFillRoundFlatButton(
             text="[i]Label[/i]",
             size_hint_y=None,
             height=50,
-            pos_hint={"center_x": 0.5, "center_y": 0.6},
+            pos_hint={"center_x": 0.5},
             theme_text_color="Custom",
             md_bg_color=self.theme_cls.primary_color,
-            on_release=self.open_menu,  # Pass reference, not the function call
+            on_release=self.open_menu,
         )
 
+        # Save Button
         self.save_button = MDFillRoundFlatButton(
             text="Save Note",
             size_hint_y=None,
             height=50,
-            pos_hint={"center_x": 0.5, "center_y": 0.4},
+            pos_hint={"center_x": 0.5},
             md_bg_color=self.theme_cls.primary_color,
             text_color=self.theme_cls.accent_color,
         )
         self.save_button.bind(on_press=self.save_note)
 
+        # Add widgets to layout
         layout.add_widget(self.writenotes_title_label)
         layout.add_widget(self.title_input)
         layout.add_widget(self.content_input)
-        layout.add_widget(self.save_button)
         layout.add_widget(self.label_button)
-
-        self.add_widget(layout)
-
-        self.content_display = BoxLayout(
-            orientation="vertical", padding=10, spacing=10, size_hint_y=None
-        )
-        self.scroll_view = ScrollView(size_hint=(1, None), size=(self.width, 300))
-        self.scroll_view.add_widget(self.content_display)
-
-        layout.add_widget(self.scroll_view)
+        layout.add_widget(self.save_button)
 
     def get_predefined_labels(self):
+        """Retrieve labels from the database and add predefined ones."""
         try:
-            if (self.db is not None) and (self.cursor is not None):
-                result = self.cursor.execute("""SELECT label FROM labels""")
-                labels = [element[0] for element in result]
-                labels.extend(["Work", "Personal", "Friend", "Other", "Add New Label"])
-                labels = list(set(labels))
-            else:
-                self.db = sqlite3.connect(self.db_path)
-                self.cursor = self.db.cursor()
-                result = self.cursor.execute("""SELECT label FROM labels""")
-                labels = [element[0] for element in result]
-                labels.extend(["Work", "Personal", "Friend", "Other", "Add New Label"])
-                labels = list(set(labels))
-            return labels
-        except sqlite3.Error as E:
-            pass
+            result = self.cursor.execute("SELECT label FROM labels")
+            labels = [element[0] for element in result] + [
+                "Work",
+                "Personal",
+                "Friend",
+                "Other",
+                "Add New Label",
+            ]
+            return list(set(labels))
+        except sqlite3.Error:
+            return ["Work", "Personal", "Friend", "Other", "Add New Label"]
 
     def select_label(self, label):
+        """Handle label selection from the dropdown menu."""
         self.selected_label = label
 
-        if str(self.selected_label) == "Add New Label":
-            self.new_label_added = MDTextField(
-                hint_text="Your New Label ...",
-                multiline=False,
-                size_hint_y=None,
-                height=200,
-                padding=50,
-                mode="rectangle",
-                radius=[10, 10, 10, 10],
-                line_color_normal=self.theme_cls.primary_color,
-                line_color_focus=self.theme_cls.accent_color,
-                font_size="18sp",
-                required=True,
-            )
-            save_label_button = MDRaisedButton(
-                text="Save", on_release=self.save_new_label
-            )
+        if label == "Add New Label":
+            self.show_add_label_popup()
+        else:
+            self.label_button.text = f"[i]{label}[/i]"
+            self.label_button.md_bg_color = (204 / 255, 119 / 255, 34 / 255, 1)
 
-            # Add a widget to create space between the text field and button
-            spacing_widget = Widget(
-                size_hint_y=None, height=20
-            )  # Adjust the height as needed
-
-            layout = BoxLayout(orientation="vertical", padding=10)
-            layout.add_widget(self.new_label_added)
-            layout.add_widget(spacing_widget)  # Add the spacing widget here
-            layout.add_widget(save_label_button)
-
-            self.popup = Popup(
-                title="Add New Label",
-                content=layout,
-                size_hint=(None, None),
-                size=(400, 300),
-            )
-            self.popup.open()
-
-        if not (self.selected_label == "Add New Label"):
-            self.label_button.text = (
-                f"[i]{label}[/i]"  # Update button text to show the selected label
-            )
-
-        self.label_button.md_bg_color = (204 / 255, 119 / 255, 34 / 255, 1)
         self.menu.dismiss()
 
-    def save_new_label(self, instance):
-        self.selected_label = self.new_label_added.text
-        self.label_button.text = f"[i]{self.selected_label}[/i]"
-
-        self.menu.items.append(
-            {
-                "viewclass": "OneLineListItem",
-                "text": self.selected_label,
-                "on_release": lambda x=self.selected_label: self.select_label(x),
-            }
+    def show_add_label_popup(self):
+        """Show a popup for adding a new label."""
+        self.new_label_added = MDTextField(
+            hint_text="Your New Label ...",
+            multiline=False,
+            size_hint_y=None,
+            height=200,
+            padding=50,
+            mode="rectangle",
+            radius=[10, 10, 10, 10],
+            line_color_normal=self.theme_cls.primary_color,
+            line_color_focus=self.theme_cls.accent_color,
+            font_size="18sp",
+            required=True,
         )
 
+        save_label_button = MDRaisedButton(text="Save", on_release=self.save_new_label)
+
+        layout = BoxLayout(orientation="vertical", padding=10)
+        layout.add_widget(self.new_label_added)
+        layout.add_widget(Widget(size_hint_y=None, height=20))  # Spacing
+        layout.add_widget(save_label_button)
+
+        self.popup = Popup(
+            title="Add New Label",
+            content=layout,
+            size_hint=(None, None),
+            size=(400, 300),
+        )
+        self.popup.open()
+
+    def save_new_label(self, instance):
+        """Save the new label to the database."""
         new_label = self.new_label_added.text
         if new_label:
             try:
@@ -221,15 +217,15 @@ class WriteNotesScreen(MDScreen):
                 self.show_popup(f"Database error: {e}")
 
     def open_menu(self, button):
-        """Open the dropdown menu when the button is clicked."""
-        self.menu.caller = button  # Set the caller to the button that was clicked
+        """Open the dropdown menu."""
+        self.menu.caller = button
         self.menu.open()
 
     def save_note(self, instance):
+        """Save the note to the database."""
         title = self.title_input.text
         content = self.content_input.text
 
-        # Check if a label is selected
         if not self.selected_label or self.selected_label == "Add New Label":
             self.show_popup("Please select a label before saving.")
             return
@@ -241,10 +237,7 @@ class WriteNotesScreen(MDScreen):
                     (title, content, self.selected_label),
                 )
                 self.db.commit()
-
-                # Call the refresh function after saving the note
                 self.refresh_ui()
-
                 self.show_popup("Note saved successfully!")
             except sqlite3.Error as e:
                 self.show_popup(f"Database error: {e}")
@@ -252,16 +245,15 @@ class WriteNotesScreen(MDScreen):
             self.show_popup("Please fill in Title & Conversations.")
 
     def refresh_ui(self):
+        """Clear the inputs and refresh the UI after saving a note."""
         self.title_input.text = ""
         self.content_input.text = ""
-
         self.selected_label = None
         self.label_button.text = "[i]Label[/i]"
         self.label_button.md_bg_color = self.theme_cls.primary_color
 
         existing_labels = self.get_predefined_labels()
-
-        dropdown_menu = [
+        self.menu.items = [
             {
                 "viewclass": "OneLineListItem",
                 "text": label,
@@ -270,17 +262,12 @@ class WriteNotesScreen(MDScreen):
             for label in existing_labels
         ]
 
-        self.menu.items = dropdown_menu
-
-        # # 4. (Optional) Refresh other UI elements, like a notes display area, if you have one
-        # self.content_display.clear_widgets()  # If you display notes in a widget, clear it
-        # self.load_notes()  # Load the notes again (implement this method if needed)
-
     def show_popup(self, message):
+        """Show a popup with a custom message."""
         dialog = MDDialog(
             text=message,
             buttons=[
-                MDFillRoundFlatButton(text="OK", on_release=lambda x: dialog.dismiss()),
+                MDFillRoundFlatButton(text="OK", on_release=lambda x: dialog.dismiss())
             ],
         )
         dialog.open()
