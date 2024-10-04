@@ -43,7 +43,9 @@ Whether you’re networking, maintaining professional relationships, or just wan
 
 
 #### Contributing Guidelines
+```
 - It's better to communicate your changes through images.
 - Check if your APK compiles succesfully.
 - Write clean and concise code.
 - Use comments if needed.
+```
