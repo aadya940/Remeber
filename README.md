@@ -49,3 +49,5 @@ Whether you’re networking, maintaining professional relationships, or just wan
 - Write clean and concise code.
 - Use comments if needed.
 ```
+
+Disclaimer: Requires your personal Google Gemini API Key.
