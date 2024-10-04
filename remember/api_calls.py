@@ -1,7 +1,7 @@
 import os
 from google import generativeai
 
-from .prompt import generate_prompt
+from prompt import generate_prompt
 
 
 def setup_gemini():

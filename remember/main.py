@@ -9,10 +9,10 @@ from kivymd.uix.dialog import MDDialog
 
 from kivy.core.window import Window
 
-from .write_notes import WriteNotesScreen
-from .contacts import ContactsScreen
-from .login import LoginScreen
-from .ask_ai import ChatScreen
+from write_notes import WriteNotesScreen
+from contacts import ContactsScreen
+from login import LoginScreen
+from ask_ai import ChatScreen
 
 import os
 

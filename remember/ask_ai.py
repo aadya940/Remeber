@@ -12,8 +12,8 @@ from kivymd.uix.card import MDCard
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager
 
-from .api_calls import setup_gemini, get_ai_suggestions
-from .utils import convert_markdown_to_kivy_markup
+from api_calls import setup_gemini, get_ai_suggestions
+from utils import convert_markdown_to_kivy_markup
 
 import sqlite3
 
