@@ -201,6 +201,7 @@ class ChatScreen(Screen):
                     result = self.notes_cursor.fetchone()
                     if result:
                         self._prompt_args["Content"] = result[0]
+                        self.user_input.hint_text = ""
                         setup_gemini()
                         _suggestions = get_ai_suggestions(
                             self._prompt_args["Name"],
