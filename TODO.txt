@@ -1,1 +1,1 @@
-- Add Edit Option on Notes.
+- Make the UI Prettier.
