@@ -50,4 +50,4 @@ Whether you’re networking, maintaining professional relationships, or just wan
 - Use comments if needed.
 ```
 
-Disclaimer: Requires your personal Google Gemini API Key. Available only on android.
+Disclaimer: Requires your personal Google Gemini API Key. 
