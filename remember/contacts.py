@@ -5,13 +5,14 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.textfield import MDTextField
 
-
 from kivy.uix.scrollview import ScrollView
 from kivy.utils import platform
 from kivy.core.window import Window
 
 import os
 import sqlite3
+
+from write_notes import WriteNotesScreen
 
 
 class ContactsScreen(MDScreen):
@@ -140,7 +141,41 @@ class ContactsScreen(MDScreen):
                 self.db.close()
 
     def edit_contact(self, contact_title):
-        pass
+        try:
+            self.db = sqlite3.connect(self.db_path)
+            self.cursor = self.db.cursor()
+            contact_title = contact_title.lower()
+
+            self.cursor.execute(
+                "SELECT title, content, label FROM notes WHERE LOWER(title) = ?",
+                (contact_title,),
+            )
+
+            res = self.cursor.fetchone()
+            contact_data = {
+                "name": res[0],
+                "notes": res[1],
+                "label": res[2],
+            }
+
+            self.db.commit()
+
+            write_notes_screen = WriteNotesScreen(
+                contact=contact_data, name="writenotes"
+            )
+
+            if self.manager.has_screen("writenotes"):
+                self.manager.remove_widget(self.manager.get_screen("writenotes"))
+
+            self.manager.add_widget(write_notes_screen)
+            self.manager.current = "writenotes"
+
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+
+        finally:
+            if self.db:
+                self.db.close()
 
     def delete_contact(self, contact_title):
         """Delete a contact from the database and refresh the contact list."""

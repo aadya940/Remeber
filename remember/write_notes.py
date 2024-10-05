@@ -16,10 +16,11 @@ import os
 
 
 class WriteNotesScreen(MDScreen):
-    def __init__(self, **kwargs):
+    def __init__(self, contact=None, **kwargs):
         super().__init__(**kwargs)
         self.theme_cls.theme_style = "Light"
         self.selected_label = None
+        self.contact = contact
 
         # Initialize the database
         self.setup_database()
@@ -36,6 +37,15 @@ class WriteNotesScreen(MDScreen):
         self.scroll_view = ScrollView(size_hint=(1, None), size=(self.width, 300))
         self.scroll_view.add_widget(self.content_display)
         layout.add_widget(self.scroll_view)
+
+        if self.contact is not None:
+            self.prefill_contact_info()
+
+    def prefill_contact_info(self):
+        """Pre-fill the contact information into the input fields."""
+        self.title_input.text = self.contact.get("name", "")
+        self.content_input.text = self.contact.get("notes", "")
+        self.label_button.text = self.contact.get("label", "")
 
     def setup_database(self):
         """Setup the SQLite database for storing notes and labels."""
