@@ -50,4 +50,4 @@ Whether you’re networking, maintaining professional relationships, or just wan
 - Use comments if needed.
 ```
 
-Disclaimer: Requires your personal Google Gemini API Key. 
+Disclaimer: Requires your personal Google Gemini API Key. To get a Google Gemini API Key, checkout [this](https://ai.google.dev/aistudio?_gl=1*b79mjb*_up*MQ..&gclid=CjwKCAjwx4O4BhAnEiwA42SbVPHiWCD1xlaMJYz00JCOo_oN4l7Ia8UvxA-NRHL5lM1pscR40AamPhoCVZwQAvD_BwE) page.
