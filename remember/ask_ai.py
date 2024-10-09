@@ -12,7 +12,7 @@ from kivymd.uix.card import MDCard
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager
 
-from api_calls import setup_gemini, get_ai_suggestions
+from api_calls import setup_gemini, start_chat, send_first_message, send_message
 from utils import convert_markdown_to_kivy_markup
 
 import sqlite3
@@ -202,13 +202,20 @@ class ChatScreen(Screen):
                     if result:
                         self._prompt_args["Content"] = result[0]
                         self.user_input.hint_text = ""
-                        setup_gemini()
-                        _suggestions = get_ai_suggestions(
+                        self._model = setup_gemini()
+
+                        self._chat = start_chat(self._model)
+
+                        _suggestions = send_first_message(
+                            self._chat,
                             self._prompt_args["Name"],
                             self._prompt_args["Label"],
                             self._prompt_args["Content"],
                         )
-                        _suggestions = convert_markdown_to_kivy_markup(_suggestions)
+
+                        _suggestions = convert_markdown_to_kivy_markup(
+                            _suggestions.text
+                        )
                         self.add_chat_bubble(_suggestions, sender="AI")
                     else:
                         self.add_chat_bubble(
@@ -230,6 +237,10 @@ class ChatScreen(Screen):
                             f"Who are you going to talk to, {self._name}?"
                         )
                 return
+
+            elif "Name" in self._prompt_args and "Label" in self._prompt_args:
+                _suggestions = send_message(self._chat, message)
+                self.add_chat_bubble(_suggestions.text, sender="AI")
 
         # Clear input after sending
         self.user_input.text = ""
