@@ -1,1 +1,5 @@
 - Make the UI Prettier.
+- Add filtering functionality based on Label in contacts page.
+- Add a formal-meeting (eg: office meeting) note taking functionality.
+- Implement functionality to add conversation dates.
+- Create App logo.
