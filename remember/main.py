@@ -88,7 +88,7 @@ class RememberApp(MDApp):
 
         # Contact list button
         contact_list_btn = MDFillRoundFlatIconButton(
-            text="Contacts",
+            text="Saved Notes",
             icon="account",
             font_style="H5",
             theme_text_color="Custom",
