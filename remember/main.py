@@ -10,6 +10,7 @@ from write_notes import WriteNotesScreen
 from contacts import ContactsScreen
 from login import LoginScreen
 from ask_ai import ChatScreen
+from utils import ContactFilterScreen
 
 import os
 
@@ -25,10 +26,15 @@ class RememberApp(MDApp):
         # Home screen setup
         home_screen = MDScreen(name="home")
 
+        contact_filter_screen = ContactFilterScreen(
+            self.screen_manager, name="contacts_filter"
+        )
+
         # Login screen
         login_screen = LoginScreen(name="login")
         self.screen_manager.add_widget(login_screen)
         self.screen_manager.add_widget(home_screen)
+        self.screen_manager.add_widget(contact_filter_screen)
 
         _login = self.screen_manager.get_screen("login")
 
@@ -49,8 +55,13 @@ class RememberApp(MDApp):
         notes_screen_events = WriteNotesScreen(_type="event", name="notes_events")
         self.screen_manager.add_widget(notes_screen_events)
 
-        contacts_screen = ContactsScreen(name="contacts")
+        contacts_screen = ContactsScreen(_type=None, name="contacts")
         self.screen_manager.add_widget(contacts_screen)
+
+        contacts_screen_meetings = ContactsScreen(
+            _type="event", name="contacts_meetings"
+        )
+        self.screen_manager.add_widget(contacts_screen_meetings)
 
         # Title label (styled and positioned)
         title_label = MDLabel(
@@ -133,7 +144,7 @@ class RememberApp(MDApp):
         self.screen_manager.current = "chat"
 
     def switch_to_contacts(self):
-        self.screen_manager.current = "contacts"
+        self.screen_manager.current = "contacts_filter"
 
     def switch_to_event(self):
         self.screen_manager.current = "notes_events"

@@ -16,8 +16,9 @@ from write_notes import WriteNotesScreen
 
 
 class ContactsScreen(MDScreen):
-    def __init__(self, **kwargs):
+    def __init__(self, _type=None, **kwargs):
         super().__init__(**kwargs)
+        self._type = _type
 
         self.theme_cls.theme_style = "Light"
 
@@ -25,8 +26,13 @@ class ContactsScreen(MDScreen):
             from android.storage import app_storage_path
 
             self.db_path = os.path.join(app_storage_path(), "notes.db")
+            if self._type == "event":
+                self.db_path = os.path.join(app_storage_path(), "events.db")
         else:
             self.db_path = "./notes.db"
+
+            if self._type == "event":
+                self.db_path = "./events.db"
 
         # Create a ScrollView to display the contacts
         self.scroll_view = ScrollView()
@@ -51,7 +57,13 @@ class ContactsScreen(MDScreen):
         try:
             self.db = sqlite3.connect(self.db_path)
             self.cursor = self.db.cursor()
-            self.cursor.execute("SELECT title, label FROM notes")
+
+            if self._type == "event":
+                self.cursor.execute("SELECT title, label FROM events")
+
+            else:
+                self.cursor.execute("SELECT title, label FROM notes")
+
             contacts = self.cursor.fetchall()  # Returns a list of tuples
             self.db.commit()
 
@@ -146,10 +158,16 @@ class ContactsScreen(MDScreen):
             self.cursor = self.db.cursor()
             contact_title = contact_title.lower()
 
-            self.cursor.execute(
-                "SELECT title, content, label FROM notes WHERE LOWER(title) = ?",
-                (contact_title,),
-            )
+            if self._type == "event":
+                self.cursor.execute(
+                    "SELECT title, content, label FROM events WHERE LOWER(title) = ?",
+                    (contact_title,),
+                )
+            else:
+                self.cursor.execute(
+                    "SELECT title, content, label FROM notes WHERE LOWER(title) = ?",
+                    (contact_title,),
+                )
 
             res = self.cursor.fetchone()
             contact_data = {
@@ -185,13 +203,23 @@ class ContactsScreen(MDScreen):
             self.cursor = self.db.cursor()
 
             # Delete the contact
-            self.cursor.execute("DELETE FROM notes WHERE title = ?", (contact_title,))
+            if self._type == "event":
+                self.cursor.execute(
+                    "DELETE FROM events WHERE title = ?", (contact_title,)
+                )
+            else:
+                self.cursor.execute(
+                    "DELETE FROM notes WHERE title = ?", (contact_title,)
+                )
+
             self.db.commit()
 
             # Refresh the contact list
             self.load_contacts()
+
         except sqlite3.Error as e:
             print(f"Database error: {e}")
+
         finally:
             if self.db:
                 self.db.close()

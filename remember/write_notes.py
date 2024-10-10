@@ -328,7 +328,7 @@ class WriteNotesScreen(MDScreen):
         self.selected_label = None
         self.label_button.text = "[i]Label[/i]"
         self.label_button.md_bg_color = self.theme_cls.primary_color
-        
+
         self.refresh_labels()
 
     def show_popup(self, message):
