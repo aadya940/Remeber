@@ -46,6 +46,9 @@ class RememberApp(MDApp):
         notes_screen = WriteNotesScreen(name="notes")
         self.screen_manager.add_widget(notes_screen)
 
+        notes_screen_events = WriteNotesScreen(_type="event", name="notes_events")
+        self.screen_manager.add_widget(notes_screen_events)
+
         contacts_screen = ContactsScreen(name="contacts")
         self.screen_manager.add_widget(contacts_screen)
 
@@ -99,11 +102,24 @@ class RememberApp(MDApp):
             on_release=lambda x: self.switch_to_contacts(),
         )
 
+        add_event_btn = MDFillRoundFlatIconButton(
+            text="Add Event",
+            icon="pencil",
+            font_style="H5",
+            theme_text_color="Custom",
+            text_color=(1, 1, 1, 1),
+            md_bg_color=self.theme_cls.primary_color,
+            pos_hint={"center_x": 0.5, "center_y": 0.15},
+            size_hint=(0.6, 0.1),
+            on_release=lambda x: self.switch_to_event(),
+        )
+
         # Add widgets to the home screen
         home_screen.add_widget(title_label)
         home_screen.add_widget(add_human_btn)
         home_screen.add_widget(ask_ai_btn)
         home_screen.add_widget(contact_list_btn)
+        home_screen.add_widget(add_event_btn)
 
         # Bind back button for Android
         Window.bind(on_keyboard=self.on_back_button)
@@ -118,6 +134,9 @@ class RememberApp(MDApp):
 
     def switch_to_contacts(self):
         self.screen_manager.current = "contacts"
+
+    def switch_to_event(self):
+        self.screen_manager.current = "notes_events"
 
     def on_back_button(self, window, key, *args):
         if key == 27:  # Android back button

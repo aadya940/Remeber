@@ -16,11 +16,12 @@ import os
 
 
 class WriteNotesScreen(MDScreen):
-    def __init__(self, contact=None, **kwargs):
+    def __init__(self, _type=None, contact=None, **kwargs):
         super().__init__(**kwargs)
         self.theme_cls.theme_style = "Light"
         self.selected_label = None
         self.contact = contact
+        self._type = _type
 
         # Initialize the database
         self.setup_database()
@@ -49,6 +50,40 @@ class WriteNotesScreen(MDScreen):
 
     def setup_database(self):
         """Setup the SQLite database for storing notes and labels."""
+        if self._type is not None:
+            if self._type == "event":
+                if platform == "android":
+                    from android.storage import app_storage_path
+
+                    self.db_path = os.path.join(app_storage_path(), "events.db")
+                else:
+                    self.db_path = "events.db"
+
+                self.db = sqlite3.connect(self.db_path)
+                self.cursor = self.db.cursor()
+
+                self.cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS labels (
+                        id INTEGER PRIMARY KEY, 
+                        label TEXT)
+                """
+                )
+                self.cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS events (
+                        id INTEGER PRIMARY KEY, 
+                        title TEXT, 
+                        content TEXT, 
+                        label TEXT REFERENCES labels(label))
+                    """
+                )
+                self.db.commit()
+
+                return
+            else:
+                raise ValueError(f"Unknown type recieved, found {self._type}")
+
         if platform == "android":
             from android.storage import app_storage_path
 
@@ -64,7 +99,7 @@ class WriteNotesScreen(MDScreen):
             CREATE TABLE IF NOT EXISTS labels (
                 id INTEGER PRIMARY KEY, 
                 label TEXT)
-        """
+            """
         )
         self.cursor.execute(
             """
@@ -147,6 +182,13 @@ class WriteNotesScreen(MDScreen):
         )
         self.save_button.bind(on_press=self.save_note)
 
+        if self._type == "event":
+            self.writenotes_title_label.text = (
+                "[b]How was your last Meeting?[/b] [i]Write Here ...[/i]"
+            )
+            self.title_input.hint_text = "Meeting title"
+            self.content_input.hint_text = "What did you discuss in the meeting ..."
+
         # Add widgets to layout
         layout.add_widget(self.writenotes_title_label)
         layout.add_widget(self.title_input)
@@ -156,6 +198,11 @@ class WriteNotesScreen(MDScreen):
 
     def get_predefined_labels(self):
         """Retrieve labels from the database and add predefined ones."""
+        if self._type == "event":
+            result = self.cursor.execute("SELECT label FROM labels")
+            labels = [element[0] for element in result] + ["Add New Label"]
+            return list(set(labels))
+
         try:
             result = self.cursor.execute("SELECT label FROM labels")
             labels = [element[0] for element in result] + [
@@ -175,6 +222,7 @@ class WriteNotesScreen(MDScreen):
 
         if label == "Add New Label":
             self.show_add_label_popup()
+
         else:
             self.label_button.text = f"[i]{label}[/i]"
             self.label_button.md_bg_color = (204 / 255, 119 / 255, 34 / 255, 1)
@@ -223,6 +271,7 @@ class WriteNotesScreen(MDScreen):
                 self.db.commit()
                 self.popup.dismiss()
                 self.show_popup(f"New label '{new_label}' added successfully!")
+                self.refresh_labels()
             except sqlite3.Error as e:
                 self.show_popup(f"Database error: {e}")
 
@@ -242,10 +291,17 @@ class WriteNotesScreen(MDScreen):
 
         if title and content:
             try:
-                self.cursor.execute(
-                    "INSERT INTO notes (title, content, label) VALUES (?, ?, ?)",
-                    (title, content, self.selected_label),
-                )
+                if self._type == "event":
+                    self.cursor.execute(
+                        "INSERT INTO labels (title, content, label) VALUES (?, ?, ?)",
+                        (title, content, self.selected_label),
+                    )
+                else:
+                    self.cursor.execute(
+                        "INSERT INTO notes (title, content, label) VALUES (?, ?, ?)",
+                        (title, content, self.selected_label),
+                    )
+
                 self.db.commit()
                 self.refresh_ui()
                 self.show_popup("Note saved successfully!")
@@ -254,14 +310,7 @@ class WriteNotesScreen(MDScreen):
         else:
             self.show_popup("Please fill in Title & Conversations.")
 
-    def refresh_ui(self):
-        """Clear the inputs and refresh the UI after saving a note."""
-        self.title_input.text = ""
-        self.content_input.text = ""
-        self.selected_label = None
-        self.label_button.text = "[i]Label[/i]"
-        self.label_button.md_bg_color = self.theme_cls.primary_color
-
+    def refresh_labels(self):
         existing_labels = self.get_predefined_labels()
         self.menu.items = [
             {
@@ -271,6 +320,16 @@ class WriteNotesScreen(MDScreen):
             }
             for label in existing_labels
         ]
+
+    def refresh_ui(self):
+        """Clear the inputs and refresh the UI after saving a note."""
+        self.title_input.text = ""
+        self.content_input.text = ""
+        self.selected_label = None
+        self.label_button.text = "[i]Label[/i]"
+        self.label_button.md_bg_color = self.theme_cls.primary_color
+        
+        self.refresh_labels()
 
     def show_popup(self, message):
         """Show a popup with a custom message."""
